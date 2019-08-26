@@ -8,12 +8,12 @@ require (
 	github.com/ipfs/go-log v0.0.1
 	github.com/jbenet/go-cienv v0.1.0
 	github.com/jbenet/goprocess v0.1.3
-	github.com/libp2p/go-conn-security-multistream v0.1.0
+	github.com/libp2p/go-conn-security-multistream v0.1.1-0.20190826113050-e3a2c9667f78
 	github.com/libp2p/go-eventbus v0.1.0
 	github.com/libp2p/go-libp2p-autonat v0.1.0
 	github.com/libp2p/go-libp2p-blankhost v0.1.3
 	github.com/libp2p/go-libp2p-circuit v0.1.1
-	github.com/libp2p/go-libp2p-core v0.2.2
+	github.com/libp2p/go-libp2p-core v0.2.3-0.20190826112323-405451631c05
 	github.com/libp2p/go-libp2p-discovery v0.1.0
 	github.com/libp2p/go-libp2p-loggables v0.1.0
 	github.com/libp2p/go-libp2p-mplex v0.2.1
@@ -23,7 +23,7 @@ require (
 	github.com/libp2p/go-libp2p-secio v0.2.0
 	github.com/libp2p/go-libp2p-swarm v0.2.1
 	github.com/libp2p/go-libp2p-testing v0.1.0
-	github.com/libp2p/go-libp2p-transport-upgrader v0.1.1
+	github.com/libp2p/go-libp2p-transport-upgrader v0.1.2-0.20190826113403-e6aa0ae488d6
 	github.com/libp2p/go-libp2p-yamux v0.2.1
 	github.com/libp2p/go-maddr-filter v0.0.5
 	github.com/libp2p/go-stream-muxer-multistream v0.2.0
@@ -33,6 +33,6 @@ require (
 	github.com/multiformats/go-multiaddr v0.0.4
 	github.com/multiformats/go-multiaddr-dns v0.0.2
 	github.com/multiformats/go-multiaddr-net v0.0.1
-	github.com/multiformats/go-multistream v0.1.0
+	github.com/multiformats/go-multistream v0.1.1-0.20190826111404-2bc18275ac63
 	github.com/whyrusleeping/mdns v0.0.0-20180901202407-ef14215e6b30
 )
