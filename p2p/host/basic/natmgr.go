@@ -6,9 +6,7 @@ import (
 	"sync"
 
 	goprocess "github.com/jbenet/goprocess"
-	goprocessctx "github.com/jbenet/goprocess/context"
 	"github.com/libp2p/go-libp2p-core/network"
-	inat "github.com/libp2p/go-libp2p-nat"
 	ma "github.com/multiformats/go-multiaddr"
 )
 
@@ -16,7 +14,7 @@ import (
 type NATManager interface {
 
 	// Get the NAT device managed by the NAT manager.
-	NAT() *inat.NAT
+	// NAT() *inat.NAT
 
 	// Receive a notification when the NAT device is ready for use.
 	Ready() <-chan struct{}
@@ -39,7 +37,7 @@ func NewNATManager(net network.Network) NATManager {
 type natManager struct {
 	net   network.Network
 	natmu sync.RWMutex
-	nat   *inat.NAT
+	// nat   *inat.NAT
 
 	ready    chan struct{} // closed once the nat is ready to process port mappings
 	syncFlag chan struct{}
@@ -86,37 +84,39 @@ func (nmgr *natManager) start() {
 		// this affects is when the daemon is being started up and _immediately_
 		// asked to close. other services are also starting up, so ok to wait.
 
-		natInstance, err := inat.DiscoverNAT(goprocessctx.OnClosingContext(worker))
-		if err != nil {
-			log.Info("DiscoverNAT error:", err)
-			close(nmgr.ready)
-			return
-		}
-
-		nmgr.natmu.Lock()
-		nmgr.nat = natInstance
-		nmgr.natmu.Unlock()
-		close(nmgr.ready)
-
-		// wire up the nat to close when nmgr closes.
-		// nmgr.proc is our parent, and waiting for us.
-		nmgr.proc.AddChild(nmgr.nat.Process())
-
-		// sign natManager up for network notifications
-		// we need to sign up here to avoid missing some notifs
-		// before the NAT has been found.
-		nmgr.net.Notify((*nmgrNetNotifiee)(nmgr))
-		defer nmgr.net.StopNotify((*nmgrNetNotifiee)(nmgr))
-
-		nmgr.doSync() // sync one first.
-		for {
-			select {
-			case <-nmgr.syncFlag:
-				nmgr.doSync() // sync when our listen addresses chnage.
-			case <-worker.Closing():
+		/*
+			natInstance, err := inat.DiscoverNAT(goprocessctx.OnClosingContext(worker))
+			if err != nil {
+				log.Info("DiscoverNAT error:", err)
+				close(nmgr.ready)
 				return
 			}
-		}
+
+			nmgr.natmu.Lock()
+			nmgr.nat = natInstance
+			nmgr.natmu.Unlock()
+			close(nmgr.ready)
+
+			// wire up the nat to close when nmgr closes.
+			// nmgr.proc is our parent, and waiting for us.
+			nmgr.proc.AddChild(nmgr.nat.Process())
+
+			// sign natManager up for network notifications
+			// we need to sign up here to avoid missing some notifs
+			// before the NAT has been found.
+			nmgr.net.Notify((*nmgrNetNotifiee)(nmgr))
+			defer nmgr.net.StopNotify((*nmgrNetNotifiee)(nmgr))
+
+			nmgr.doSync() // sync one first.
+			for {
+				select {
+				case <-nmgr.syncFlag:
+					nmgr.doSync() // sync when our listen addresses chnage.
+				case <-worker.Closing():
+					return
+				}
+			}
+		*/
 	})
 }
 
@@ -182,47 +182,51 @@ func (nmgr *natManager) doSync() {
 	defer wg.Wait()
 
 	// Close old mappings
-	for _, m := range nmgr.nat.Mappings() {
-		mappedPort := m.InternalPort()
-		if _, ok := ports[m.Protocol()][mappedPort]; !ok {
-			// No longer need this mapping.
-			wg.Add(1)
-			go func(m inat.Mapping) {
-				defer wg.Done()
-				m.Close()
-			}(m)
-		} else {
-			// already mapped
-			ports[m.Protocol()][mappedPort] = true
-		}
-	}
-
-	// Create new mappings.
-	for proto, pports := range ports {
-		for port, mapped := range pports {
-			if mapped {
-				continue
+	/*
+		for _, m := range nmgr.nat.Mappings() {
+			mappedPort := m.InternalPort()
+			if _, ok := ports[m.Protocol()][mappedPort]; !ok {
+				// No longer need this mapping.
+				wg.Add(1)
+				go func(m inat.Mapping) {
+					defer wg.Done()
+					m.Close()
+				}(m)
+			} else {
+				// already mapped
+				ports[m.Protocol()][mappedPort] = true
 			}
-			wg.Add(1)
-			go func(proto string, port int) {
-				defer wg.Done()
-				_, err := nmgr.nat.NewMapping(proto, port)
-				if err != nil {
-					log.Errorf("failed to port-map %s port %d: %s", proto, port, err)
-				}
-			}(proto, port)
 		}
-	}
+
+		// Create new mappings.
+		for proto, pports := range ports {
+			for port, mapped := range pports {
+				if mapped {
+					continue
+				}
+				wg.Add(1)
+				go func(proto string, port int) {
+					defer wg.Done()
+					_, err := nmgr.nat.NewMapping(proto, port)
+					if err != nil {
+						log.Errorf("failed to port-map %s port %d: %s", proto, port, err)
+					}
+				}(proto, port)
+			}
+		}
+	*/
 }
 
 // NAT returns the natManager's nat object. this may be nil, if
 // (a) the search process is still ongoing, or (b) the search process
 // found no nat. Clients must check whether the return value is nil.
+/*
 func (nmgr *natManager) NAT() *inat.NAT {
 	nmgr.natmu.Lock()
 	defer nmgr.natmu.Unlock()
 	return nmgr.nat
 }
+*/
 
 type nmgrNetNotifiee natManager
 
